@@ -8,10 +8,16 @@ where P: AsRef<Path>, {
     Ok(io::BufReader::new(file).lines())
 }
 
-fn calculate_fuel(mass: u32) -> f64 {
-    let mass_convert = mass as f64;
+fn calculate_fuel(mass: f64) -> f64 {
 
-    (mass_convert / 3.0).floor() - 2.0
+    let fuel = (mass / 3.0).floor() - 2.0;
+    if fuel > 0.0 {
+        // Passing ownership to the next iteration of the function call
+        fuel + calculate_fuel(fuel) 
+    } else {
+        // Returning 0 if fuel is 0 or negative
+        0.0
+    }
 }
 fn main() { 
     let mut fuel: Vec<f64> = Vec::new();
@@ -22,12 +28,27 @@ fn main() {
             if let Ok(ip) = line {
                 println!("{}", ip);
                 // Converting String to u32
-                let value = ip.trim().parse::<u32>().unwrap();
+                let value = ip.trim().parse::<f64>().unwrap();
                 fuel.push(calculate_fuel(value));
                 let sum: f64 = fuel.iter().sum();
                 println!("Total fuel needed: {}", sum);
 
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn calculate_fuel_1969() {
+        assert_eq!(966.0, calculate_fuel(1969.0));
+    }
+
+    #[test]
+    fn calculate_fuel_100756() {
+        assert_eq!(50346.0, calculate_fuel(100756.0));
     }
 }
