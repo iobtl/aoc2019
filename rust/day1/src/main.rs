@@ -1,13 +1,8 @@
-use std::io::{self, BufRead};
-use std::fs::File;
-use std::path::Path;
+use std::env;
+use std::fs;
+use std::io::{self, BufRead, BufReader};
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
-}
-
+<<<<<<< HEAD
 fn calculate_fuel(mass: f64) -> f64 {
 
     let fuel = (mass / 3.0).floor() - 2.0;
@@ -35,7 +30,32 @@ fn main() {
 
             }
         }
+=======
+fn calculate_fuel(mass: u32) -> f64 {
+   
+    let mass_f64 = mass as f64;
+    let fuel =(mass_f64 / 3.0).floor();  
+
+    fuel - 2.0
+}
+
+fn main() {
+   
+    let input = fs::File::open("input.txt");
+    let buffered = BufReader::new(input).lines();
+    
+    for line in buffered.lines() {
+        println!("{}", line);
+>>>>>>> 5349ff98c0944f7d85e07ca5dd3a5d9ad4addc80
     }
+
+    let mass: u32 = 12;
+
+    let fuel = calculate_fuel(mass);
+
+    println!("{}", fuel);
+
+
 }
 
 #[cfg(test)]
