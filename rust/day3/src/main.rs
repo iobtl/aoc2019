@@ -1,18 +1,16 @@
 #[derive(Debug, PartialEq, PartialOrd, Copy, Clone)]
 struct Wire {
-    U: u32,
-    D: u32,
-    L: u32,
-    R: u32,
+    x: i32,
+    y: i32,
 } 
 
 impl Wire {
-    pub fn move_path(self, steps: u32, direction: &str) -> Wire {
+    pub fn move_path(self, direction: &str) -> Wire {
         match direction {
-            "U" => Wire { U: self.U + steps, ..self },
-            "D" => Wire { D: self.D + steps, ..self },
-            "L" => Wire { L: self.L + steps, ..self },
-            "R" => Wire { R: self.R + steps, ..self },
+            "U" => Wire { y: self.y + 1, x: self.x },
+            "D" => Wire { y: self.y - 1, x: self.x },
+            "L" => Wire { x: self.x - 1, y: self.y },
+            "R" => Wire { x: self.x + 1, y: self.y },
             _ => panic!("Unknown direction specified"),
         }
     }
@@ -28,34 +26,79 @@ fn main() {
     
     let mut x_moves: Vec<Wire> = vec![];
     let mut y_moves: Vec<Wire> = vec![];
-    let mut x = Wire { U: 0, D: 0, L: 0, R: 0 };
-    let mut y = Wire { U: 0, D: 0, L: 0, R: 0 };
+    let mut cache: Vec<Wire> = vec![];
+    let mut total_x_steps: Vec<i32> = vec![];
+    let mut total_y_steps: Vec<i32> = vec![];
+    let mut x = Wire { x: 0, y: 0 };
+    let mut y = Wire { x: 0, y: 0 };
 
     let mut i = 0;
     // Observing moves for the first wire
     while i < x_instr.len() {
+        let mut x_step = 0;
         let (direction, steps) = x_instr[i].split_at(1);
-        steps = steps.parse::<u32>().unwrap();
-        println!("{}, {}", direction, steps);
-        //let steps = x_instr[i+1].parse::<u32>().unwrap(); 
-        
+        let steps = match steps.parse::<i32>() {
+            Ok(number) => number,
+            Err(e) => break,
+        };
+
         for _ in 0..steps {
-            x = x.move_path(1, direction);
+            x = x.move_path(direction);
+            if x_moves.contains(&x) {
+                // currently will fail if steps not added to total_x_steps tracker vector
+                let move_idx = x_moves.iter().position(|&z| z == x).unwrap();
+                total_x_steps.push(*total_x_steps.get(move_idx).unwrap());
+            } else {
+                x_step += 1;
+                total_x_steps.push(x_step);
+            }
             x_moves.push(x);
         }
-        i += 2;
-    }
-    i = 0;
-    // Observing moves for the second wire
-    while i < y_instr.len() {
-        let direction = y_instr[i];
-        let steps = y_instr[i+1].parse::<u32>().unwrap(); 
-        
-        for _ in 0..steps {
-            y = y.move_path(1, direction);
-            y_moves.push(y);
-        }
-        i += 2;
+        i += 1;
     }
 
+    i = 0;
+
+    // Observing moves for the second wire
+    while i < y_instr.len() {
+        let mut y_step = 0;
+        let (direction, steps) = y_instr[i].split_at(1);
+        let steps = match steps.parse::<i32>() {
+            Ok(number) => number,
+            Err(e) => break,
+        }; 
+
+        for _ in 0..steps {
+            y = y.move_path(direction);
+            if y_moves.contains(&x) {
+                // currently will fail if steps not added to total_x_steps tracker vector
+                let move_idx = y_moves.iter().position(|&z| z == x).unwrap();
+                total_y_steps.push(*total_y_steps.get(move_idx).unwrap());
+            } else {
+                y_step += 1;
+                total_y_steps.push(y_step);
+            y_moves.push(y);
+        }
+        i += 1;
+        }
+    }
+
+    // Comparing positions over time
+    for i in x_moves.iter() {
+        for j in y_moves.iter() {
+            if i.x == j.x && i.y == j.y {
+                println!("Intersection found at x: {}, y: {}", j.x, j.y);
+                cache.push(*j);
+            }
+        }
+    }
+
+    let mut shortest = 100000000;
+    for positions in cache.iter() {
+        let distance = positions.x.abs() + positions.y.abs();
+        if distance < shortest {
+            shortest = distance;
+            println!("{}", shortest);
+        }
+    }
 }
