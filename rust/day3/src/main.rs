@@ -27,15 +27,16 @@ fn main() {
     let mut x_moves: Vec<Wire> = vec![];
     let mut y_moves: Vec<Wire> = vec![];
     let mut cache: Vec<Wire> = vec![];
-    let mut total_x_steps: Vec<i32> = vec![];
-    let mut total_y_steps: Vec<i32> = vec![];
+    let mut total_x_steps = vec![];
+    let mut total_y_steps = vec![];
     let mut x = Wire { x: 0, y: 0 };
     let mut y = Wire { x: 0, y: 0 };
 
     let mut i = 0;
+    let mut x_step = 0;
+    let mut y_step = 0;
     // Observing moves for the first wire
     while i < x_instr.len() {
-        let mut x_step = 0;
         let (direction, steps) = x_instr[i].split_at(1);
         let steps = match steps.parse::<i32>() {
             Ok(number) => number,
@@ -44,14 +45,19 @@ fn main() {
 
         for _ in 0..steps {
             x = x.move_path(direction);
-            if x_moves.contains(&x) {
-                // currently will fail if steps not added to total_x_steps tracker vector
-                let move_idx = x_moves.iter().position(|&z| z == x).unwrap();
-                total_x_steps.push(*total_x_steps.get(move_idx).unwrap());
-            } else {
-                x_step += 1;
+            // If the wire has landed on a position before, use initial amount of
+            // steps to get to that point
+            println!("Current position of wire1: x: {}, y: {}", x.x, x.y);
+            /*if x_moves.contains(&x) {
+                let x_idx = x_moves.iter().position(|&z| z == x).unwrap();
+                x_step = *total_x_steps.get(x_idx).unwrap();
+                println!("Total number of steps to get to this point: {}\n", x_step);
                 total_x_steps.push(x_step);
-            }
+            } else {
+            */
+            x_step += 1;
+            println!("Total number of steps to get to this point: {}\n", x_step);
+            total_x_steps.push(x_step);
             x_moves.push(x);
         }
         i += 1;
@@ -61,7 +67,6 @@ fn main() {
 
     // Observing moves for the second wire
     while i < y_instr.len() {
-        let mut y_step = 0;
         let (direction, steps) = y_instr[i].split_at(1);
         let steps = match steps.parse::<i32>() {
             Ok(number) => number,
@@ -70,27 +75,45 @@ fn main() {
 
         for _ in 0..steps {
             y = y.move_path(direction);
-            if y_moves.contains(&x) {
-                // currently will fail if steps not added to total_x_steps tracker vector
-                let move_idx = y_moves.iter().position(|&z| z == x).unwrap();
-                total_y_steps.push(*total_y_steps.get(move_idx).unwrap());
-            } else {
-                y_step += 1;
+            // Registering the number of steps taken to get to a particular position on the
+            // grid
+            println!("Current position of wire2: x: {}, y: {}", y.x, y.y);
+            /*
+            if y_moves.contains(&y) {
+                let y_idx = y_moves.iter().position(|&z| z == y).unwrap();
+                y_step = *total_y_steps.get(y_idx).unwrap();
+                println!("Total number of steps to get to this point: {}\n", y_step);
                 total_y_steps.push(y_step);
+            } else {
+            */
+            y_step += 1;
+            println!("Total number of steps to get to this point: {}\n", y_step);
+            total_y_steps.push(y_step);
             y_moves.push(y);
         }
         i += 1;
-        }
     }
 
+    let mut least_steps = 100000000;
     // Comparing positions over time
     for i in x_moves.iter() {
         for j in y_moves.iter() {
             if i.x == j.x && i.y == j.y {
+                // For repeated points we take the initial number of steps taken to
+                // get to that intersection point
+                let x_idx = x_moves.iter().position(|&z| z == *i).unwrap();
+                let y_idx = y_moves.iter().position(|&z| z == *j).unwrap();
+
+                let x_step = total_x_steps.get(x_idx).unwrap();
+                let y_step = total_y_steps.get(y_idx).unwrap();
+                if (x_step + y_step) < least_steps {
+                    least_steps = x_step + y_step;
+                }
                 println!("Intersection found at x: {}, y: {}", j.x, j.y);
                 cache.push(*j);
             }
         }
+        println!("Smallest number of intersection steps: {}", least_steps);
     }
 
     let mut shortest = 100000000;
