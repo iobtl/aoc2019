@@ -13,4 +13,10 @@ if __name__ == '__main__':
 
         pos += 4
 
-    print(ops[0])
+    original = ops[0]
+    target = 19690720
+    diff = target - original
+
+    noun = diff // 331776 + ops[1]
+    verb = diff % 331776 + ops[2]
+    print(100 * noun + verb)
