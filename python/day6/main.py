@@ -1,5 +1,7 @@
 orbit_mapping = dict()
 sum = 0
+start_callsign = 'YOU'
+target_callsign = 'SAN'
 
 
 def search_indirect_orbits(orbiter):
@@ -29,3 +31,31 @@ if __name__ == '__main__':
             sum += res
 
     print(sum)
+
+    you_object = orbit_mapping[start_callsign][0]
+    target_object = orbit_mapping[target_callsign][0]
+
+    transfers = 0
+    you_orbits = []
+    target_orbits = []
+    while you_object:
+        if isinstance(you_object, list):
+            you_object = you_object[0]
+        you_orbits.append(you_object)
+        you_object = orbit_mapping.get(you_object)
+
+    while target_object:
+        if isinstance(target_object, list):
+            target_object = target_object[0]
+        target_orbits.append(target_object)
+        target_object = orbit_mapping.get(target_object)
+
+    common_orbit = None
+    for i in you_orbits:
+        if i in target_orbits:
+            common_orbit = i
+            break
+
+    transfers = you_orbits.index(common_orbit) + \
+        target_orbits.index(common_orbit)
+    print(transfers)
