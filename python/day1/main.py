@@ -1,27 +1,18 @@
 import math
 
-# Defining helper functions
-def calculate_fuel(mass, total_fuel=0):
+def calculate_fuel(mass):
     fuel = math.floor(mass / 3) - 2
-    
-    while fuel > 0:
-        total_fuel += fuel
-        fuel = calculate_fuel(fuel, total_fuel=total_fuel)
+    if fuel <= 0:
+        return 0
 
-        if fuel <= 0:
-            break
+    return fuel + calculate_fuel(fuel)
 
-    return total_fuel
+if __name__ == '__main__':
+    with open("input.txt", "r") as f:
+        masses = [i.split('\n')[0] for i in f.readlines()]
+        f.close()
 
-
-fuel = calculate_fuel(1969)
-print(fuel)
-
-# Reading lines off files
-f = open("input.txt", "r")
-lines = f.readlines()
-
-#values = sum([calculate_fuel(int(i)) for i in lines])
-#print(values)
+    mass_fuel = [calculate_fuel(int(mass)) for mass in masses]
+    print(sum(mass_fuel))
 
 
